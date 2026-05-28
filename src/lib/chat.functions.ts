@@ -3,8 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildSystemPrompt, type LovableMode } from "./personality";
 
-const MODEL = "google/gemini-3-flash-preview";
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const MODEL = "gemini-2.0-flash";
+const GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
 /**
  * Send a user message, get a complete assistant reply (non-streaming).
@@ -18,8 +18,8 @@ export const sendMessage = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY missing");
 
     const [{ data: conv, error: cErr }, { data: history, error: hErr }, { data: profile }, { data: memories }] = await Promise.all([
       supabase.from("conversations").select("*").eq("id", data.conversationId).maybeSingle(),
@@ -59,8 +59,8 @@ export const sendMessage = createServerFn({ method: "POST" })
     });
 
     if (!res.ok) {
-      if (res.status === 429) throw new Error("Lovable is being asked too much right now. Try again in a moment.");
-      if (res.status === 402) throw new Error("AI credits exhausted. Add more in workspace settings.");
+      if (res.status === 429) throw new Error("Too many requests. Try again in a moment.");
+      if (res.status === 402) throw new Error("AI quota exhausted. Check your API key limits.");
       const t = await res.text();
       console.error("AI gateway error", res.status, t);
       throw new Error("AI gateway error");
@@ -102,7 +102,7 @@ async function extractMemories(
   const prompt = `From this exchange, extract 0-3 SHORT durable facts about the USER worth remembering long-term (preferences, values, interests, life context, humor style, inside-jokes, ongoing projects). Skip ephemeral details. Return JSON.
 
 USER said: ${userMsg.slice(0, 1500)}
-LOVABLE replied: ${assistantMsg.slice(0, 1500)}`;
+ASSISTANT replied: ${assistantMsg.slice(0, 1500)}`;
 
   const res = await fetch(GATEWAY, {
     method: "POST",
@@ -163,7 +163,7 @@ export const getCheckIn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const apiKey = process.env.LOVABLE_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return { text: "Hello again. What's worth your attention today?" };
 
     const [{ data: profile }, { data: memories }, { data: recent }] = await Promise.all([

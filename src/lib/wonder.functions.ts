@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildSystemPrompt } from "./personality";
 
-const MODEL = "google/gemini-3-flash-preview";
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const MODEL = "gemini-2.0-flash";
+const GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
 export const listWonderReports = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -22,8 +22,8 @@ export const generateWonderReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY missing");
 
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const [{ data: profile }, { data: memories }, { data: msgs }] = await Promise.all([

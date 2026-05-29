@@ -41,7 +41,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       <div className="ink-card max-w-md rounded-2xl p-8 text-center">
         <h1 className="font-display text-2xl">Something flickered</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Even Lovable trips on its own thoughts sometimes. Try again?
+          Even the stream engenius trips on its own thoughts sometimes. Try again?
         </p>
         <div className="mt-6 flex justify-center gap-2">
           <button
@@ -62,17 +62,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable — your curious AI companion" },
-      { name: "description", content: "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable — your curious AI companion" },
-      { property: "og:description", content: "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
+      { title: "the stream engenius — your curious AI companion" },
+      { name: "description", content: "the stream engenius is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
+      { name: "author", content: "the stream engenius" },
+      { property: "og:title", content: "the stream engenius — your curious AI companion" },
+      { property: "og:description", content: "the stream engenius is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Lovable — your curious AI companion" },
-      { name: "twitter:description", content: "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f422ffa-3990-48b3-8baa-0a3dc36d6616/id-preview-d5ba7591--c2d03bba-45a0-439b-b371-22f165515b7e.lovable.app-1779864564177.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f422ffa-3990-48b3-8baa-0a3dc36d6616/id-preview-d5ba7591--c2d03bba-45a0-439b-b371-22f165515b7e.lovable.app-1779864564177.png" },
+      { name: "twitter:title", content: "the stream engenius — your curious AI companion" },
+      { name: "twitter:description", content: "the stream engenius is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

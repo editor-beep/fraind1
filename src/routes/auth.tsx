@@ -5,11 +5,11 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
-  head: () => ({ meta: [{ title: "Enter Lovable" }] }),
+  head: () => ({ meta: [{ title: "Enter the stream engenius" }] }),
 });
 
 function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signup");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -47,7 +47,7 @@ function AuthPage() {
       <div className="absolute inset-0 bg-gradient-dusk pointer-events-none" />
       <div className="relative w-full max-w-md">
         <Link to="/" className="mb-8 block text-center font-display text-3xl">
-          Lovable<span className="text-rose">.</span>
+          the stream engenius
         </Link>
         <div className="ink-card rounded-2xl p-8">
           <h1 className="font-display text-3xl">

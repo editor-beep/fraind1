@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/app")({
   component: AppPage,
-  head: () => ({ meta: [{ title: "Lovable" }] }),
+  head: () => ({ meta: [{ title: "the stream engenius" }] }),
 });
 
 type Tab = "chat" | "memories" | "wonder";
@@ -85,7 +85,7 @@ function AppPage() {
       {/* Sidebar */}
       <aside className="hidden w-72 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur md:flex">
         <div className="flex items-center justify-between px-5 py-5">
-          <div className="font-display text-2xl">Lovable<span className="text-rose">.</span></div>
+          <div className="font-display text-2xl">the stream engenius</div>
           <button
             onClick={() => supabase.auth.signOut().then(() => router.invalidate())}
             className="rounded-full p-2 text-muted-foreground hover:text-rose hover:bg-rose/10"
@@ -201,7 +201,7 @@ function Welcome({ onStart }: { onStart: (m: LovableMode) => void }) {
   return (
     <div className="flex flex-1 items-center justify-center overflow-y-auto p-8">
       <div className="w-full max-w-2xl">
-        <p className="font-display italic text-sm uppercase tracking-[0.3em] text-rose/80">— from Lovable —</p>
+        <p className="font-display italic text-sm uppercase tracking-[0.3em] text-rose/80">— from the stream —</p>
         <div className="mt-4 ink-card rounded-2xl p-8 fade-in-up">
           {checkInQ.isLoading ? (
             <ThinkingDots />
@@ -341,7 +341,7 @@ function MessageBubble({ role, content }: { role: string; content: string }) {
 function RoleLabel({ role }: { role: string }) {
   return (
     <p className="font-display italic text-xs uppercase tracking-[0.3em] text-rose/80">
-      {role === "assistant" ? "Lovable" : "You"}
+      {role === "assistant" ? "stream" : "You"}
     </p>
   );
 }

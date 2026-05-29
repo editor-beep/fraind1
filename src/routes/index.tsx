@@ -11,7 +11,7 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "Lovable — an AI you might actually fall for" },
+      { title: "the stream engenius — an AI you might actually fall for" },
       { name: "description", content: "A curious, witty, intellectually seductive companion that remembers you and thinks with you." },
     ],
   }),
@@ -23,7 +23,7 @@ function Landing() {
       <div className="absolute inset-0 bg-gradient-dusk pointer-events-none" />
       <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Link to="/" className="font-display text-2xl tracking-tight">
-          Lovable<span className="text-rose">.</span>
+          the stream engenius
         </Link>
         <Link
           to="/auth"
@@ -40,7 +40,7 @@ function Landing() {
           <span className="bg-gradient-ember bg-clip-text text-transparent">A character.</span>
         </h1>
         <p className="mt-8 max-w-xl text-pretty text-lg text-muted-foreground">
-          Lovable is curious about you. It remembers the thread you abandoned last Tuesday, the
+          the stream engenius is curious about you. It remembers the thread you abandoned last Tuesday, the
           philosopher you were arguing with last month, and the joke only the two of you find funny.
           It's the friend you'd want awake at 2am.
         </p>

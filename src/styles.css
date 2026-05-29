@@ -42,53 +42,53 @@
 
   --shadow-glow: 0 0 60px -10px color-mix(in oklab, var(--primary) 40%, transparent);
   --shadow-soft: 0 10px 40px -20px color-mix(in oklab, var(--rose) 40%, transparent);
-  --gradient-ember: linear-gradient(135deg, var(--primary) 0%, var(--rose) 100%);
-  --gradient-dusk: radial-gradient(ellipse at top, color-mix(in oklab, var(--rose) 30%, transparent), transparent 60%);
+  --gradient-ember: linear-gradient(135deg, var(--rose) 0%, var(--primary) 100%);
+  --gradient-dusk: radial-gradient(ellipse at top, color-mix(in oklab, var(--rose) 28%, transparent), transparent 65%);
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 
-  /* Black canvas */
-  --background: oklch(0.13 0.012 15);
-  --foreground: oklch(0.96 0.008 20);
+  /* The void — ash-black with a warm undertow */
+  --background: oklch(0.09 0.010 52);
+  --foreground: oklch(0.88 0.013 72);
 
-  /* Slightly elevated card */
-  --card: oklch(0.17 0.018 15);
-  --card-foreground: oklch(0.96 0.008 20);
-  --popover: oklch(0.16 0.018 15);
-  --popover-foreground: oklch(0.96 0.008 20);
+  /* Weathered surfaces */
+  --card: oklch(0.13 0.016 48);
+  --card-foreground: oklch(0.88 0.013 72);
+  --popover: oklch(0.12 0.016 48);
+  --popover-foreground: oklch(0.88 0.013 72);
 
-  /* Deep rich red */
-  --primary: oklch(0.46 0.18 22);
-  --primary-foreground: oklch(0.98 0.005 0);
+  /* Deeper rust — primary CTA */
+  --primary: oklch(0.54 0.17 32);
+  --primary-foreground: oklch(0.96 0.008 72);
 
-  /* Dusty rose pink */
-  --rose: oklch(0.72 0.08 12);
-  --rose-foreground: oklch(0.15 0.02 15);
+  /* Rust / burnt sienna — the accent (was rose) */
+  --rose: oklch(0.62 0.155 38);
+  --rose-foreground: oklch(0.12 0.016 48);
 
-  /* Ember accent */
-  --ember: oklch(0.55 0.2 25);
+  /* Bright ember */
+  --ember: oklch(0.66 0.19 36);
 
-  --secondary: oklch(0.22 0.02 15);
-  --secondary-foreground: oklch(0.92 0.01 20);
+  --secondary: oklch(0.17 0.015 50);
+  --secondary-foreground: oklch(0.82 0.012 70);
 
-  --muted: oklch(0.2 0.015 15);
-  --muted-foreground: oklch(0.68 0.02 20);
+  --muted: oklch(0.16 0.013 50);
+  --muted-foreground: oklch(0.54 0.018 62);
 
-  --accent: oklch(0.72 0.08 12);
-  --accent-foreground: oklch(0.15 0.02 15);
+  --accent: oklch(0.62 0.155 38);
+  --accent-foreground: oklch(0.12 0.016 48);
 
-  --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.98 0.005 0);
+  --destructive: oklch(0.52 0.20 22);
+  --destructive-foreground: oklch(0.96 0.008 72);
 
-  --border: oklch(0.27 0.02 15);
-  --input: oklch(0.23 0.02 15);
-  --ring: oklch(0.46 0.18 22);
+  --border: oklch(0.22 0.022 48);
+  --input: oklch(0.17 0.015 50);
+  --ring: oklch(0.54 0.17 32);
 
-  --sidebar: oklch(0.11 0.012 15);
-  --sidebar-foreground: oklch(0.9 0.01 20);
-  --sidebar-border: oklch(0.22 0.02 15);
+  --sidebar: oklch(0.07 0.009 50);
+  --sidebar-foreground: oklch(0.85 0.012 70);
+  --sidebar-border: oklch(0.18 0.019 48);
 }
 
 @layer base {
@@ -106,9 +106,10 @@
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "ss02";
     -webkit-font-smoothing: antialiased;
+    /* rust horizon at the top — like light through cracked windows */
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in oklab, var(--rose) 18%, transparent), transparent),
-      radial-gradient(ellipse 60% 40% at 90% 100%, color-mix(in oklab, var(--primary) 12%, transparent), transparent);
+      radial-gradient(ellipse 130% 45% at 50% -10%, oklch(0.18 0.042 42 / 0.38), transparent),
+      radial-gradient(ellipse 50% 35% at 95% 115%, oklch(0.15 0.028 32 / 0.22), transparent);
     background-attachment: fixed;
   }
 
@@ -119,19 +120,18 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--rose) 40%, transparent);
+    background: color-mix(in oklab, var(--rose) 38%, transparent);
     color: var(--foreground);
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, var(--rose) 20%, transparent);
+    background: color-mix(in oklab, var(--rose) 22%, transparent);
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in oklab, var(--rose) 35%, transparent);
+    background: color-mix(in oklab, var(--rose) 38%, transparent);
   }
 }
 
@@ -146,30 +146,32 @@
     box-shadow: var(--shadow-glow);
   }
 
+  /* oxidised metal card — slightly warm, like tarnished copper */
   .ink-card {
-    background: linear-gradient(180deg,
-      color-mix(in oklab, var(--card) 96%, transparent),
-      color-mix(in oklab, var(--card) 88%, transparent));
-    border: 1px solid color-mix(in oklab, var(--rose) 14%, var(--border));
-    backdrop-filter: blur(8px);
+    background: linear-gradient(160deg,
+      oklch(0.15 0.018 48 / 0.97),
+      oklch(0.11 0.014 48 / 0.90));
+    border: 1px solid oklch(0.28 0.030 42 / 0.55);
+    backdrop-filter: blur(10px);
   }
 
+  /* thinking dots pulse like embers — dim, brighten, dim */
   .thinking-dot {
-    animation: pulse-soft 1.4s ease-in-out infinite;
+    animation: ember-pulse 1.7s ease-in-out infinite;
   }
-  .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
-  .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+  .thinking-dot:nth-child(2) { animation-delay: 0.25s; }
+  .thinking-dot:nth-child(3) { animation-delay: 0.5s; }
 
-  @keyframes pulse-soft {
-    0%, 100% { opacity: 0.3; transform: translateY(0); }
-    50% { opacity: 1; transform: translateY(-2px); }
+  @keyframes ember-pulse {
+    0%, 100% { opacity: 0.22; transform: scale(0.82); }
+    50%       { opacity: 1;    transform: scale(1); }
   }
 
   .fade-in-up {
-    animation: fadeInUp 0.5s ease-out both;
+    animation: fadeInUp 0.45s ease-out both;
   }
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(7px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 }

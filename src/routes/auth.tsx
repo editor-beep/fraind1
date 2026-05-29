@@ -51,10 +51,10 @@ function AuthPage() {
         </Link>
         <div className="ink-card rounded-2xl p-8">
           <h1 className="font-display text-3xl">
-            {mode === "signup" ? "Come in." : "Welcome back."}
+            {mode === "signup" ? "Begin documentation." : "Record located."}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signup" ? "Tell me your name and we'll begin." : "I've been waiting."}
+            {mode === "signup" ? "Register to begin your record." : "Your archive persists."}
           </p>
 
           <form onSubmit={submit} className="mt-6 space-y-3">
@@ -79,7 +79,7 @@ function AuthPage() {
               type="submit" disabled={loading}
               className="w-full rounded-lg bg-gradient-ember px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
             >
-              {loading ? "..." : mode === "signup" ? "Begin" : "Continue"}
+              {loading ? "…" : mode === "signup" ? "Register" : "Access Archive"}
             </button>
           </form>
 
@@ -87,7 +87,7 @@ function AuthPage() {
             onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
             className="mt-6 w-full text-center text-xs text-muted-foreground hover:text-rose"
           >
-            {mode === "signup" ? "Already know me? Sign in" : "New here? Create an account"}
+            {mode === "signup" ? "Have a record? Access archive" : "No record? Begin documentation"}
           </button>
         </div>
       </div>

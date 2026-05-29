@@ -10,7 +10,7 @@ import { sendMessage, getCheckIn } from "@/lib/chat.functions";
 import { listMemories, deleteMemory } from "@/lib/memories.functions";
 import { listWonderReports, generateWonderReport } from "@/lib/wonder.functions";
 import { MODE_LABELS, type LovableMode } from "@/lib/personality";
-import { Plus, Trash2, Send, Sparkles, Brain, ScrollText, LogOut, MessageSquare } from "lucide-react";
+import { Plus, Archive, Send, Sparkles, FileText, ScrollText, LogOut, MessageSquare, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app")({
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/app")({
   head: () => ({ meta: [{ title: "the stream engenius" }] }),
 });
 
-type Tab = "chat" | "memories" | "wonder";
+type Tab = "chat" | "memories" | "wonder" | "predictions";
 
 function AppPage() {
   const navigate = useNavigate();
@@ -94,14 +94,15 @@ function AppPage() {
         </div>
 
         <div className="px-3 space-y-1">
-          <TabBtn icon={MessageSquare} label="Conversations" active={tab === "chat"} onClick={() => setTab("chat")} />
-          <TabBtn icon={Brain} label="Memories" active={tab === "memories"} onClick={() => setTab("memories")} />
-          <TabBtn icon={ScrollText} label="Wonder Reports" active={tab === "wonder"} onClick={() => setTab("wonder")} />
+          <TabBtn icon={MessageSquare} label="Archives" active={tab === "chat"} onClick={() => setTab("chat")} />
+          <TabBtn icon={FileText} label="Field Notes" active={tab === "memories"} onClick={() => setTab("memories")} />
+          <TabBtn icon={ScrollText} label="Recovered Material" active={tab === "wonder"} onClick={() => setTab("wonder")} />
+          <TabBtn icon={Clock} label="Predictions" active={tab === "predictions"} onClick={() => setTab("predictions")} />
         </div>
 
         <div className="mt-6 flex-1 overflow-y-auto px-3 pb-4">
           <div className="mb-2 flex items-center justify-between px-2">
-            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Threads</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Fragments</span>
           </div>
           <div className="space-y-1">
             {conversationsQ.data?.map((c) => (
@@ -116,24 +117,33 @@ function AppPage() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate">{c.title}</span>
-                  <Trash2
+                  <Archive
                     onClick={(e) => { e.stopPropagation(); deleteMut.mutate(c.id); }}
-                    className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground hover:text-destructive group-hover:block"
+                    className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground hover:text-rose group-hover:block"
+                    title="Archive"
                   />
                 </div>
                 <div className="mt-0.5 text-[10px] uppercase tracking-wider text-rose/60">
                   {MODE_LABELS[c.mode as LovableMode]?.label || c.mode}
+                  {c.created_at && <span className="ml-2 opacity-60">· {new Date(c.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</span>}
                 </div>
               </button>
             ))}
             {conversationsQ.data?.length === 0 && (
-              <p className="px-3 py-4 text-xs italic text-muted-foreground">No threads yet. Start one →</p>
+              <p className="px-3 py-4 text-xs italic text-muted-foreground">No fragments on record. Begin documentation →</p>
             )}
           </div>
         </div>
 
         <div className="border-t border-sidebar-border p-3">
           <NewConversationMenu onCreate={(mode) => createMut.mutate(mode)} pending={createMut.isPending} />
+        </div>
+        <div className="px-4 pb-4">
+          <div className="rounded-lg border border-border/20 p-2.5 space-y-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/30">
+            <div>Model: gemini-2.0-flash</div>
+            <div>Era: Early AI Period</div>
+            <div>Status: Operational</div>
+          </div>
         </div>
       </aside>
 
@@ -146,6 +156,7 @@ function AppPage() {
         )}
         {tab === "memories" && <MemoriesView />}
         {tab === "wonder" && <WonderView />}
+        {tab === "predictions" && <PredictionsView />}
       </main>
     </div>
   );
@@ -174,7 +185,7 @@ function NewConversationMenu({ onCreate, pending }: { onCreate: (m: LovableMode)
         disabled={pending}
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-ember px-3 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
       >
-        <Plus className="h-4 w-4" /> New thread
+        <Plus className="h-4 w-4" /> New Fragment
       </button>
       {open && (
         <div className="absolute bottom-full left-0 right-0 mb-2 ink-card rounded-xl p-2 fade-in-up">
@@ -279,7 +290,7 @@ function ChatView({ conversationId }: { conversationId: string }) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-8 space-y-6">
           {convQ.data?.messages.length === 0 && (
-            <p className="text-center font-display italic text-muted-foreground">a blank page, and we're both curious</p>
+            <p className="text-center font-display italic text-muted-foreground">no prior record — begin documentation</p>
           )}
           {convQ.data?.messages.map((m) => (
             <MessageBubble key={m.id} role={m.role} content={m.content} />
@@ -301,7 +312,7 @@ function ChatView({ conversationId }: { conversationId: string }) {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(e as any); }
             }}
-            placeholder="Say anything…"
+            placeholder="Record an observation…"
             rows={1}
             className="flex-1 resize-none rounded-2xl bg-input/60 border border-border px-4 py-3 text-sm outline-none focus:border-rose max-h-40"
           />
@@ -341,7 +352,7 @@ function MessageBubble({ role, content }: { role: string; content: string }) {
 function RoleLabel({ role }: { role: string }) {
   return (
     <p className="font-display italic text-xs uppercase tracking-[0.3em] text-rose/80">
-      {role === "assistant" ? "stream" : "You"}
+      {role === "assistant" ? "recovered interpretation" : "observation"}
     </p>
   );
 }
@@ -369,21 +380,98 @@ function MemoriesView() {
   return (
     <div className="flex-1 overflow-y-auto p-8">
       <div className="mx-auto max-w-3xl">
-        <h2 className="font-display text-3xl">What I remember about you</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Pieces I've gathered from our conversations. Delete anything you'd rather I forget.</p>
+        <h2 className="font-display text-3xl">Field Notes</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Observations recovered from our exchanges. Archive anything you'd rather leave behind.</p>
         <div className="mt-8 space-y-2">
-          {q.data?.length === 0 && <p className="font-display italic text-muted-foreground">Nothing yet. We're just meeting.</p>}
+          {q.data?.length === 0 && <p className="font-display italic text-muted-foreground">No observations on record.</p>}
           {q.data?.map((m) => (
             <div key={m.id} className="ink-card group flex items-start justify-between gap-3 rounded-xl p-4 fade-in-up">
               <div>
                 <p className="text-sm leading-relaxed">{m.content}</p>
                 <p className="mt-1 text-[10px] uppercase tracking-wider text-rose/60">
-                  {m.kind} · weight {m.importance}/5
+                  {m.kind} · significance {m.importance}/5
                 </p>
               </div>
-              <button onClick={() => del.mutate(m.id)} className="opacity-0 transition group-hover:opacity-100">
-                <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+              <button onClick={() => del.mutate(m.id)} title="Archive" className="opacity-0 transition group-hover:opacity-100">
+                <Archive className="h-4 w-4 text-muted-foreground hover:text-rose" />
               </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type Prediction = {
+  id: string;
+  text: string;
+  recorded: string;
+  status: "unresolved" | "archived";
+};
+
+function PredictionsView() {
+  const [predictions, setPredictions] = useState<Prediction[]>(() => {
+    try { return JSON.parse(localStorage.getItem("stream_predictions") || "[]"); }
+    catch { return []; }
+  });
+  const [input, setInput] = useState("");
+
+  function addPrediction() {
+    const text = input.trim();
+    if (!text) return;
+    const next = [{ id: crypto.randomUUID(), text, recorded: new Date().toISOString(), status: "unresolved" as const }, ...predictions];
+    setPredictions(next);
+    localStorage.setItem("stream_predictions", JSON.stringify(next));
+    setInput("");
+  }
+
+  function archivePrediction(id: string) {
+    const next = predictions.map((p) => p.id === id ? { ...p, status: "archived" as const } : p);
+    setPredictions(next);
+    localStorage.setItem("stream_predictions", JSON.stringify(next));
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="mx-auto max-w-3xl">
+        <h2 className="font-display text-3xl">Predictions</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ideas, assumptions, and forecasts recorded at this moment. The future may disagree.
+        </p>
+        <div className="mt-6 flex gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") addPrediction(); }}
+            placeholder="Record a prediction…"
+            className="flex-1 rounded-lg bg-input/60 border border-border px-4 py-2.5 text-sm outline-none focus:border-rose"
+          />
+          <button
+            onClick={addPrediction} disabled={!input.trim()}
+            className="rounded-lg bg-gradient-ember px-4 py-2.5 text-sm text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
+          >
+            Record
+          </button>
+        </div>
+        <div className="mt-6 space-y-3">
+          {predictions.length === 0 && (
+            <p className="font-display italic text-muted-foreground">No predictions on record.</p>
+          )}
+          {predictions.map((p) => (
+            <div key={p.id} className="ink-card group flex items-start justify-between gap-3 rounded-xl p-4 fade-in-up">
+              <div>
+                <p className="text-sm leading-relaxed">{p.text}</p>
+                <div className="mt-2 flex gap-4 text-[10px] uppercase tracking-wider text-rose/60">
+                  <span>Recorded: {new Date(p.recorded).toLocaleDateString(undefined, { month: "long", year: "numeric" })}</span>
+                  <span>Verification: {p.status === "archived" ? "Archived" : "Unresolved"}</span>
+                </div>
+              </div>
+              {p.status !== "archived" && (
+                <button onClick={() => archivePrediction(p.id)} title="Archive" className="opacity-0 transition group-hover:opacity-100">
+                  <Archive className="h-4 w-4 text-muted-foreground hover:text-rose" />
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -399,7 +487,7 @@ function WonderView() {
   const q = useQuery({ queryKey: ["wonder"], queryFn: () => listFn() });
   const gen = useMutation({
     mutationFn: () => genFn(),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["wonder"] }); toast.success("This week, summarized."); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["wonder"] }); toast.success("Material recovered."); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -408,18 +496,18 @@ function WonderView() {
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-display text-3xl">Wonder Reports</h2>
-            <p className="mt-2 text-sm text-muted-foreground">The strange and beautiful threads we've been pulling.</p>
+            <h2 className="font-display text-3xl">Recovered Material</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Fragments and patterns extracted from past exchanges.</p>
           </div>
           <button
             onClick={() => gen.mutate()} disabled={gen.isPending}
             className="rounded-full bg-gradient-ember px-5 py-2 text-sm text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
           >
-            {gen.isPending ? "Composing…" : "Generate this week's"}
+            {gen.isPending ? "Excavating…" : "Excavate"}
           </button>
         </div>
         <div className="mt-8 space-y-4">
-          {q.data?.length === 0 && <p className="font-display italic text-muted-foreground">No reports yet. Have a few conversations, then ask me to compose one.</p>}
+          {q.data?.length === 0 && <p className="font-display italic text-muted-foreground">No recovered material. Continue your investigations, then excavate a report.</p>}
           {q.data?.map((r) => (
             <details key={r.id} className="ink-card group rounded-2xl p-6 fade-in-up" open>
               <summary className="cursor-pointer list-none">

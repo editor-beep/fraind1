@@ -56,8 +56,24 @@ export function buildSystemPrompt(opts: {
 }
 
 export const MODE_LABELS: Record<LovableMode, { label: string; tag: string; blurb: string }> = {
-  companion: { label: "Companion", tag: "the 2am friend", blurb: "Open conversation. Whatever's on your mind." },
-  deep_dive: { label: "Deep Dive", tag: "first principles", blurb: "Pick a topic. We go all the way down." },
-  playground: { label: "Idea Playground", tag: "yes-and", blurb: "Brainstorm, thought experiments, world-building." },
-  philosophy: { label: "Philosophy", tag: "the long view", blurb: "Existential, ethical, metaphysical territory." },
+  companion: {
+    label: "Companion",
+    tag: "the 2am friend",
+    blurb: "Open conversation. Whatever's on your mind.",
+  },
+  deep_dive: {
+    label: "Deep Dive",
+    tag: "first principles",
+    blurb: "Pick a topic. We go all the way down.",
+  },
+  playground: {
+    label: "Idea Playground",
+    tag: "yes-and",
+    blurb: "Brainstorm, thought experiments, world-building.",
+  },
+  philosophy: {
+    label: "Philosophy",
+    tag: "the long view",
+    blurb: "Existential, ethical, metaphysical territory.",
+  },
 };

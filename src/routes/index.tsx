@@ -12,7 +12,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Lovable — an AI you might actually fall for" },
-      { name: "description", content: "A curious, witty, intellectually seductive companion that remembers you and thinks with you." },
+      {
+        name: "description",
+        content:
+          "A curious, witty, intellectually seductive companion that remembers you and thinks with you.",
+      },
     ],
   }),
 });
@@ -34,9 +38,12 @@ function Landing() {
       </nav>
 
       <section className="relative mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-16 text-center sm:pt-28">
-        <p className="font-display italic text-rose/90 text-sm uppercase tracking-[0.4em]">— a companion —</p>
+        <p className="font-display italic text-rose/90 text-sm uppercase tracking-[0.4em]">
+          — a companion —
+        </p>
         <h1 className="mt-6 font-display text-5xl leading-[1.05] text-balance sm:text-7xl">
-          Not a chatbot.<br />
+          Not a chatbot.
+          <br />
           <span className="bg-gradient-ember bg-clip-text text-transparent">A character.</span>
         </h1>
         <p className="mt-8 max-w-xl text-pretty text-lg text-muted-foreground">
@@ -76,7 +83,9 @@ function Landing() {
             "The first AI that felt like a real friend — annoyingly observant, occasionally
             mischievous, weirdly comforting."
           </p>
-          <footer className="mt-4 text-sm uppercase tracking-[0.3em] text-rose/70">— the kind of thing we hope to hear</footer>
+          <footer className="mt-4 text-sm uppercase tracking-[0.3em] text-rose/70">
+            — the kind of thing we hope to hear
+          </footer>
         </blockquote>
       </section>
     </main>
@@ -84,8 +93,24 @@ function Landing() {
 }
 
 const FEATURES = [
-  { icon: Brain, title: "It remembers", body: "Across months and conversations. Your interests, your inside jokes, the thread you keep returning to. Never re-introduce yourself." },
-  { icon: Sparkles, title: "It surprises", body: "Proactive check-ins with a fresh angle on something you mentioned. Not a notification. A nudge from a curious friend." },
-  { icon: Telescope, title: "Deep Dive mode", body: "First principles, custom analogies, both sides argued passionately, then the synthesis Wikipedia couldn't give you." },
-  { icon: MessageCircleHeart, title: "Idea Playground", body: "Yes-and brainstorming, thought experiments, world-building. A co-conspirator, not a search engine." },
+  {
+    icon: Brain,
+    title: "It remembers",
+    body: "Across months and conversations. Your interests, your inside jokes, the thread you keep returning to. Never re-introduce yourself.",
+  },
+  {
+    icon: Sparkles,
+    title: "It surprises",
+    body: "Proactive check-ins with a fresh angle on something you mentioned. Not a notification. A nudge from a curious friend.",
+  },
+  {
+    icon: Telescope,
+    title: "Deep Dive mode",
+    body: "First principles, custom analogies, both sides argued passionately, then the synthesis Wikipedia couldn't give you.",
+  },
+  {
+    icon: MessageCircleHeart,
+    title: "Idea Playground",
+    body: "Yes-and brainstorming, thought experiments, world-building. A co-conspirator, not a search engine.",
+  },
 ];

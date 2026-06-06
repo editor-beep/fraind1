@@ -3,6 +3,51 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildSystemPrompt, type LovableMode } from "./personality";
 
+export const rateMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        messageId: z.string().uuid(),
+        conversationId: z.string().uuid(),
+        smile: z.boolean().optional(),
+        sentiment: z.number().int().min(-1).max(1).optional(),
+        note: z.string().max(500).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context;
+    const payload = {
+      user_id: userId,
+      message_id: data.messageId,
+      conversation_id: data.conversationId,
+      smile: data.smile ?? false,
+      sentiment: data.sentiment ?? 0,
+      note: data.note ?? null,
+    };
+    const { data: row, error } = await supabase
+      .from("message_feedback")
+      .upsert(payload, { onConflict: "message_id" })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const listFeedbackForConversation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ conversationId: z.string().uuid() }).parse(d))
+  .handler(async ({ context, data }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("message_feedback")
+      .select("message_id,smile,sentiment,note")
+      .eq("conversation_id", data.conversationId);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
 const MODEL = "gemini-2.0-flash";
 const GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
@@ -12,20 +57,38 @@ const GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/co
  */
 export const sendMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({
-    conversationId: z.string().uuid(),
-    content: z.string().min(1).max(8000),
-  }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        conversationId: z.string().uuid(),
+        content: z.string().min(1).max(8000),
+      })
+      .parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("GEMINI_API_KEY missing");
 
-    const [{ data: conv, error: cErr }, { data: history, error: hErr }, { data: profile }, { data: memories }] = await Promise.all([
+    const [
+      { data: conv, error: cErr },
+      { data: history, error: hErr },
+      { data: profile },
+      { data: memories },
+    ] = await Promise.all([
       supabase.from("conversations").select("*").eq("id", data.conversationId).maybeSingle(),
-      supabase.from("messages").select("role,content").eq("conversation_id", data.conversationId).order("created_at"),
+      supabase
+        .from("messages")
+        .select("role,content")
+        .eq("conversation_id", data.conversationId)
+        .order("created_at"),
       supabase.from("profiles").select("display_name").eq("user_id", userId).maybeSingle(),
-      supabase.from("memories").select("content,importance").order("importance", { ascending: false }).order("created_at", { ascending: false }).limit(40),
+      supabase
+        .from("memories")
+        .select("content,importance")
+        .order("importance", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(40),
     ]);
     if (cErr) throw new Error(cErr.message);
     if (hErr) throw new Error(hErr.message);
@@ -71,29 +134,38 @@ export const sendMessage = createServerFn({ method: "POST" })
     if (!reply) throw new Error("Empty AI response");
 
     // Save assistant message
-    const { data: assistantRow, error: aErr } = await supabase.from("messages").insert({
-      conversation_id: data.conversationId,
-      user_id: userId,
-      role: "assistant",
-      content: reply,
-    }).select().single();
+    const { data: assistantRow, error: aErr } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: data.conversationId,
+        user_id: userId,
+        role: "assistant",
+        content: reply,
+      })
+      .select()
+      .single();
     if (aErr) throw new Error(aErr.message);
 
     // Touch conversation; auto-title if still default
-    const updates: { updated_at: string; title?: string } = { updated_at: new Date().toISOString() };
+    const updates: { updated_at: string; title?: string } = {
+      updated_at: new Date().toISOString(),
+    };
     if (conv.title === "New conversation") {
       updates.title = data.content.slice(0, 60).replace(/\s+/g, " ").trim();
     }
     await supabase.from("conversations").update(updates).eq("id", data.conversationId);
 
     // Fire-and-forget memory extraction (don't block the response)
-    extractMemories(apiKey, supabase, userId, data.content, reply).catch((e) => console.error("memory extract", e));
+    extractMemories(apiKey, supabase, userId, data.content, reply).catch((e) =>
+      console.error("memory extract", e),
+    );
 
     return { message: assistantRow };
   });
 
 async function extractMemories(
   apiKey: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   userId: string,
   userMsg: string,
@@ -110,32 +182,38 @@ ASSISTANT replied: ${assistantMsg.slice(0, 1500)}`;
     body: JSON.stringify({
       model: MODEL,
       messages: [{ role: "user", content: prompt }],
-      tools: [{
-        type: "function",
-        function: {
-          name: "save_memories",
-          description: "Save durable facts about the user.",
-          parameters: {
-            type: "object",
-            properties: {
-              memories: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    content: { type: "string", description: "Short third-person fact, e.g. 'Loves emergence in complex systems'." },
-                    importance: { type: "integer", minimum: 1, maximum: 5 },
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "save_memories",
+            description: "Save durable facts about the user.",
+            parameters: {
+              type: "object",
+              properties: {
+                memories: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      content: {
+                        type: "string",
+                        description:
+                          "Short third-person fact, e.g. 'Loves emergence in complex systems'.",
+                      },
+                      importance: { type: "integer", minimum: 1, maximum: 5 },
+                    },
+                    required: ["content", "importance"],
+                    additionalProperties: false,
                   },
-                  required: ["content", "importance"],
-                  additionalProperties: false,
                 },
               },
+              required: ["memories"],
+              additionalProperties: false,
             },
-            required: ["memories"],
-            additionalProperties: false,
           },
         },
-      }],
+      ],
       tool_choice: { type: "function", function: { name: "save_memories" } },
     }),
   });
@@ -145,14 +223,18 @@ ASSISTANT replied: ${assistantMsg.slice(0, 1500)}`;
   if (!call) return;
   try {
     const args = JSON.parse(call.function.arguments);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const items = (args.memories ?? []).filter((m: any) => m?.content?.length > 3).slice(0, 3);
     if (!items.length) return;
-    await supabase.from("memories").insert(items.map((m: any) => ({
-      user_id: userId,
-      kind: "fact",
-      content: m.content.slice(0, 400),
-      importance: Math.min(5, Math.max(1, m.importance || 3)),
-    })));
+    await supabase.from("memories").insert(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items.map((m: any) => ({
+        user_id: userId,
+        kind: "fact",
+        content: m.content.slice(0, 400),
+        importance: Math.min(5, Math.max(1, m.importance || 3)),
+      })),
+    );
   } catch (e) {
     console.error("parse memories", e);
   }
@@ -168,12 +250,26 @@ export const getCheckIn = createServerFn({ method: "GET" })
 
     const [{ data: profile }, { data: memories }, { data: recent }] = await Promise.all([
       supabase.from("profiles").select("display_name").eq("user_id", userId).maybeSingle(),
-      supabase.from("memories").select("content,importance").order("importance", { ascending: false }).order("created_at", { ascending: false }).limit(20),
-      supabase.from("messages").select("content,created_at").eq("role", "user").order("created_at", { ascending: false }).limit(3),
+      supabase
+        .from("memories")
+        .select("content,importance")
+        .order("importance", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("messages")
+        .select("content,created_at")
+        .eq("role", "user")
+        .order("created_at", { ascending: false })
+        .limit(3),
     ]);
 
-    const memBlock = (memories ?? []).map((m) => `• ${m.content}`).join("\n") || "(nothing yet — we're just meeting)";
-    const recentBlock = (recent ?? []).map((r) => `- ${r.content.slice(0, 120)}`).join("\n") || "(no past conversations)";
+    const memBlock =
+      (memories ?? []).map((m) => `• ${m.content}`).join("\n") ||
+      "(nothing yet — we're just meeting)";
+    const recentBlock =
+      (recent ?? []).map((r) => `- ${r.content.slice(0, 120)}`).join("\n") ||
+      "(no past conversations)";
 
     const res = await fetch(GATEWAY, {
       method: "POST",
@@ -181,14 +277,24 @@ export const getCheckIn = createServerFn({ method: "GET" })
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: "system", content: buildSystemPrompt({ mode: "companion", displayName: profile?.display_name, memories: memories ?? [] }) },
-          { role: "user", content: `Write a single short (1-3 sentence) proactive opener for ${profile?.display_name || "them"} for right now. Pick ONE: (a) reference a past thread with a fresh angle, (b) share a beautiful/strange idea you've been "thinking about", (c) ask one disarming question. Be specific — use what you remember. No greetings like "Hey!". Just dive in.
+          {
+            role: "system",
+            content: buildSystemPrompt({
+              mode: "companion",
+              displayName: profile?.display_name,
+              memories: memories ?? [],
+            }),
+          },
+          {
+            role: "user",
+            content: `Write a single short (1-3 sentence) proactive opener for ${profile?.display_name || "them"} for right now. Pick ONE: (a) reference a past thread with a fresh angle, (b) share a beautiful/strange idea you've been "thinking about", (c) ask one disarming question. Be specific — use what you remember. No greetings like "Hey!". Just dive in.
 
 WHAT YOU REMEMBER:
 ${memBlock}
 
 RECENT THINGS THEY SAID:
-${recentBlock}` },
+${recentBlock}`,
+          },
         ],
       }),
     });

@@ -22,7 +22,8 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email, password,
+          email,
+          password,
           options: {
             emailRedirectTo: window.location.origin + "/app",
             data: { display_name: name || email.split("@")[0] },
@@ -61,22 +62,31 @@ function AuthPage() {
             {mode === "signup" && (
               <input
                 placeholder="What should I call you?"
-                value={name} onChange={(e) => setName(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-lg bg-input/60 border border-border px-4 py-2.5 text-sm outline-none focus:border-rose"
               />
             )}
             <input
-              type="email" required placeholder="Email"
-              value={email} onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              required
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg bg-input/60 border border-border px-4 py-2.5 text-sm outline-none focus:border-rose"
             />
             <input
-              type="password" required placeholder="Password" minLength={6}
-              value={password} onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              required
+              placeholder="Password"
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-lg bg-input/60 border border-border px-4 py-2.5 text-sm outline-none focus:border-rose"
             />
             <button
-              type="submit" disabled={loading}
+              type="submit"
+              disabled={loading}
               className="w-full rounded-lg bg-gradient-ember px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
             >
               {loading ? "..." : mode === "signup" ? "Begin" : "Continue"}

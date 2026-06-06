@@ -17,10 +17,14 @@ export const listConversations = createServerFn({ method: "GET" })
 
 export const createConversation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({
-    mode: z.enum(["companion", "deep_dive", "playground", "philosophy"]).default("companion"),
-    title: z.string().max(200).optional(),
-  }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        mode: z.enum(["companion", "deep_dive", "playground", "philosophy"]).default("companion"),
+        title: z.string().max(200).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
@@ -39,7 +43,11 @@ export const getConversation = createServerFn({ method: "GET" })
     const { supabase } = context;
     const [{ data: conv, error: e1 }, { data: msgs, error: e2 }] = await Promise.all([
       supabase.from("conversations").select("*").eq("id", data.id).maybeSingle(),
-      supabase.from("messages").select("id,role,content,created_at").eq("conversation_id", data.id).order("created_at"),
+      supabase
+        .from("messages")
+        .select("id,role,content,created_at")
+        .eq("conversation_id", data.id)
+        .order("created_at"),
     ]);
     if (e1) throw new Error(e1.message);
     if (e2) throw new Error(e2.message);
@@ -59,10 +67,15 @@ export const deleteConversation = createServerFn({ method: "POST" })
 
 export const renameConversation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ id: z.string().uuid(), title: z.string().min(1).max(200) }).parse(d))
+  .inputValidator((d) =>
+    z.object({ id: z.string().uuid(), title: z.string().min(1).max(200) }).parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase } = context;
-    const { error } = await supabase.from("conversations").update({ title: data.title }).eq("id", data.id);
+    const { error } = await supabase
+      .from("conversations")
+      .update({ title: data.title })
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

@@ -16,9 +16,15 @@ function makeSlug() {
 /** Generate provocative "spark seeds" — short prompts for thought experiments. */
 export const generateSparks = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({
-    flavor: z.enum(["any", "what_if", "world_building", "remix", "absurd", "ethical"]).default("any"),
-  }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        flavor: z
+          .enum(["any", "what_if", "world_building", "remix", "absurd", "ethical"])
+          .default("any"),
+      })
+      .parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
     const apiKey = process.env.LOVABLE_API_KEY;
@@ -26,7 +32,11 @@ export const generateSparks = createServerFn({ method: "POST" })
 
     const [{ data: profile }, { data: memories }] = await Promise.all([
       supabase.from("profiles").select("display_name").eq("user_id", userId).maybeSingle(),
-      supabase.from("memories").select("content,importance").order("importance", { ascending: false }).limit(20),
+      supabase
+        .from("memories")
+        .select("content,importance")
+        .order("importance", { ascending: false })
+        .limit(20),
     ]);
 
     const memBlock = (memories ?? []).map((m) => `• ${m.content}`).join("\n") || "(nothing yet)";
@@ -39,7 +49,11 @@ export const generateSparks = createServerFn({ method: "POST" })
       ethical: "All prompts should be ethical dilemmas with no clean answer.",
     };
 
-    const system = buildSystemPrompt({ mode: "playground", displayName: profile?.display_name, memories: memories ?? [] });
+    const system = buildSystemPrompt({
+      mode: "playground",
+      displayName: profile?.display_name,
+      memories: memories ?? [],
+    });
 
     const res = await fetch(GATEWAY, {
       method: "POST",
@@ -48,44 +62,56 @@ export const generateSparks = createServerFn({ method: "POST" })
         model: MODEL,
         messages: [
           { role: "system", content: system },
-          { role: "user", content: `Generate 6 SPARK SEEDS — short (1-2 sentence) provocations to start a thought experiment with me. ${flavorHint[data.flavor]} Lean into what you already know about them. Each seed should be specific, weird, and immediately playable. No numbering, no preamble — just the seeds via the tool.
+          {
+            role: "user",
+            content: `Generate 6 SPARK SEEDS — short (1-2 sentence) provocations to start a thought experiment with me. ${flavorHint[data.flavor]} Lean into what you already know about them. Each seed should be specific, weird, and immediately playable. No numbering, no preamble — just the seeds via the tool.
 
 WHAT YOU REMEMBER:
-${memBlock}` },
+${memBlock}`,
+          },
         ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "emit_sparks",
-            description: "Return spark seeds.",
-            parameters: {
-              type: "object",
-              properties: {
-                sparks: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string", description: "Short, evocative 2-5 word title." },
-                      prompt: { type: "string", description: "The 1-2 sentence provocation itself." },
-                      tag: { type: "string", description: "One-word vibe tag (e.g. 'what-if', 'remix', 'absurd')." },
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "emit_sparks",
+              description: "Return spark seeds.",
+              parameters: {
+                type: "object",
+                properties: {
+                  sparks: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", description: "Short, evocative 2-5 word title." },
+                        prompt: {
+                          type: "string",
+                          description: "The 1-2 sentence provocation itself.",
+                        },
+                        tag: {
+                          type: "string",
+                          description: "One-word vibe tag (e.g. 'what-if', 'remix', 'absurd').",
+                        },
+                      },
+                      required: ["title", "prompt", "tag"],
+                      additionalProperties: false,
                     },
-                    required: ["title", "prompt", "tag"],
-                    additionalProperties: false,
                   },
                 },
+                required: ["sparks"],
+                additionalProperties: false,
               },
-              required: ["sparks"],
-              additionalProperties: false,
             },
           },
-        }],
+        ],
         tool_choice: { type: "function", function: { name: "emit_sparks" } },
       }),
     });
 
     if (!res.ok) {
-      if (res.status === 429) throw new Error("Too many requests right now. Try again in a moment.");
+      if (res.status === 429)
+        throw new Error("Too many requests right now. Try again in a moment.");
       if (res.status === 402) throw new Error("AI credits exhausted.");
       throw new Error("AI gateway error");
     }
@@ -93,17 +119,23 @@ ${memBlock}` },
     const call = body.choices?.[0]?.message?.tool_calls?.[0];
     if (!call) throw new Error("No sparks returned");
     const args = JSON.parse(call.function.arguments);
-    return { sparks: (args.sparks ?? []).slice(0, 6) as { title: string; prompt: string; tag: string }[] };
+    return {
+      sparks: (args.sparks ?? []).slice(0, 6) as { title: string; prompt: string; tag: string }[],
+    };
   });
 
 /** Save a spark as a shareable seed (returns slug). */
 export const shareSpark = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({
-    title: z.string().min(1).max(120),
-    prompt: z.string().min(2).max(2000),
-    tag: z.string().max(40).optional(),
-  }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        title: z.string().min(1).max(120),
+        prompt: z.string().min(2).max(2000),
+        tag: z.string().max(40).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
     // Try up to 3 times for unique slug
@@ -111,7 +143,13 @@ export const shareSpark = createServerFn({ method: "POST" })
       const slug = makeSlug();
       const { data: row, error } = await supabase
         .from("spark_seeds")
-        .insert({ owner_id: userId, slug, title: data.title, prompt: data.prompt, tag: data.tag ?? null })
+        .insert({
+          owner_id: userId,
+          slug,
+          title: data.title,
+          prompt: data.prompt,
+          tag: data.tag ?? null,
+        })
         .select()
         .single();
       if (!error) return row;
@@ -126,7 +164,11 @@ export const playSeed = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ seedId: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
-    const { data: seed, error: sErr } = await supabase.from("spark_seeds").select("*").eq("id", data.seedId).maybeSingle();
+    const { data: seed, error: sErr } = await supabase
+      .from("spark_seeds")
+      .select("*")
+      .eq("id", data.seedId)
+      .maybeSingle();
     if (sErr) throw new Error(sErr.message);
     if (!seed) throw new Error("Seed not found");
 
@@ -160,11 +202,15 @@ export const playSeed = createServerFn({ method: "POST" })
 /** Legacy: play a spark directly (creates seed under the hood for shareability). */
 export const playSpark = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({
-    title: z.string().min(1).max(120),
-    prompt: z.string().min(2).max(2000),
-    tag: z.string().max(40).optional(),
-  }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        title: z.string().min(1).max(120),
+        prompt: z.string().min(2).max(2000),
+        tag: z.string().max(40).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
     let seedId: string | null = null;
@@ -172,10 +218,19 @@ export const playSpark = createServerFn({ method: "POST" })
       const slug = makeSlug();
       const { data: seed, error } = await supabase
         .from("spark_seeds")
-        .insert({ owner_id: userId, slug, title: data.title, prompt: data.prompt, tag: data.tag ?? null })
+        .insert({
+          owner_id: userId,
+          slug,
+          title: data.title,
+          prompt: data.prompt,
+          tag: data.tag ?? null,
+        })
         .select("id")
         .single();
-      if (!error) { seedId = seed.id; break; }
+      if (!error) {
+        seedId = seed.id;
+        break;
+      }
       if (!String(error.message).includes("duplicate")) break;
     }
 

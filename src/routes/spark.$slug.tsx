@@ -40,7 +40,11 @@ function SharedSparkPage() {
     mutationFn: (id: string) => playFn({ data: { seedId: id } }),
     onSuccess: (conv) => {
       // Pass the conv id via search so app can open it; using simple navigation + localStorage for now
-      try { localStorage.setItem("lovable.openConv", conv.id); } catch {}
+      try {
+        localStorage.setItem("lovable.openConv", conv.id);
+      } catch {
+        /* ignore */
+      }
       navigate({ to: "/app" });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -52,15 +56,26 @@ function SharedSparkPage() {
   }
 
   if (seedQ.isLoading) {
-    return <div className="flex min-h-screen items-center justify-center"><p className="font-display italic text-rose/70">finding the spark…</p></div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="font-display italic text-rose/70">finding the spark…</p>
+      </div>
+    );
   }
   if (seedQ.isError || !seedQ.data) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6 text-center">
         <div>
           <p className="font-display text-2xl">This spark has gone cold.</p>
-          <p className="mt-2 text-sm text-muted-foreground">The link may be wrong, or the seed was removed.</p>
-          <Link to="/" className="mt-6 inline-block rounded-full bg-gradient-ember px-5 py-2 text-sm text-primary-foreground">Back home</Link>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The link may be wrong, or the seed was removed.
+          </p>
+          <Link
+            to="/"
+            className="mt-6 inline-block rounded-full bg-gradient-ember px-5 py-2 text-sm text-primary-foreground"
+          >
+            Back home
+          </Link>
         </div>
       </div>
     );
@@ -71,7 +86,9 @@ function SharedSparkPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background">
       <div className="w-full max-w-2xl">
-        <p className="font-display italic text-xs uppercase tracking-[0.3em] text-rose/80">— a spark from Lovable —</p>
+        <p className="font-display italic text-xs uppercase tracking-[0.3em] text-rose/80">
+          — a spark from Lovable —
+        </p>
         <div className="mt-4 ink-card rounded-2xl p-8 fade-in-up">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-rose/70">
             <Sparkles className="h-3 w-3" /> {seed.tag || "spark"}
@@ -88,7 +105,10 @@ function SharedSparkPage() {
             <Copy className="h-4 w-4" /> Copy link
           </button>
           {authed === false ? (
-            <Link to="/auth" className="flex items-center gap-2 rounded-full bg-gradient-ember px-5 py-2 text-sm text-primary-foreground hover:opacity-95">
+            <Link
+              to="/auth"
+              className="flex items-center gap-2 rounded-full bg-gradient-ember px-5 py-2 text-sm text-primary-foreground hover:opacity-95"
+            >
               Sign in to play <ArrowRight className="h-4 w-4" />
             </Link>
           ) : (
@@ -97,7 +117,8 @@ function SharedSparkPage() {
               disabled={playMut.isPending || authed === null}
               className="flex items-center gap-2 rounded-full bg-gradient-ember px-5 py-2 text-sm text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
             >
-              {playMut.isPending ? "Opening…" : "Play this spark"} <ArrowRight className="h-4 w-4" />
+              {playMut.isPending ? "Opening…" : "Play this spark"}{" "}
+              <ArrowRight className="h-4 w-4" />
             </button>
           )}
         </div>

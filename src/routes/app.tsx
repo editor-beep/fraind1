@@ -4,19 +4,52 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  listConversations, createConversation, getConversation, deleteConversation,
+  listConversations,
+  createConversation,
+  getConversation,
+  deleteConversation,
 } from "@/lib/conversations.functions";
-import { sendMessage, getCheckIn, rateMessage, listFeedbackForConversation } from "@/lib/chat.functions";
-import { listMemories, addMemory, updateMemory, deleteMemory, togglePinMemory } from "@/lib/memories.functions";
+import {
+  sendMessage,
+  getCheckIn,
+  rateMessage,
+  listFeedbackForConversation,
+} from "@/lib/chat.functions";
+import {
+  listMemories,
+  addMemory,
+  updateMemory,
+  deleteMemory,
+  togglePinMemory,
+} from "@/lib/memories.functions";
 import { listWonderReports, generateWonderReport } from "@/lib/wonder.functions";
 import { generateSparks, playSpark, shareSpark } from "@/lib/playground.functions";
 import { MODE_LABELS, type LovableMode } from "@/lib/personality";
 import {
-  Plus, Trash2, Send, Sparkles, Brain, ScrollText, LogOut, MessageSquare,
-  ArrowLeft, Pencil, Check, X, Download, Wand2, FlaskConical, Smile, Frown, Meh, Pin, PinOff, Share2, Link2,
+  Plus,
+  Trash2,
+  Send,
+  Sparkles,
+  Brain,
+  ScrollText,
+  LogOut,
+  MessageSquare,
+  ArrowLeft,
+  Pencil,
+  Check,
+  X,
+  Download,
+  Wand2,
+  FlaskConical,
+  Smile,
+  Frown,
+  Meh,
+  Pin,
+  PinOff,
+  Share2,
+  Link2,
 } from "lucide-react";
 import { toast } from "sonner";
-
 
 export const Route = createFileRoute("/app")({
   component: AppPage,
@@ -47,12 +80,15 @@ function AppPage() {
             setActiveConvId(pending);
             setTab("chat");
           }
-        } catch {}
+        } catch {
+          /* ignore */
+        }
       }
     });
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [navigate]);
-
 
   const listConvFn = useServerFn(listConversations);
   const createConvFn = useServerFn(createConversation);
@@ -95,32 +131,67 @@ function AppPage() {
       <aside className="hidden w-72 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur md:flex">
         <div className="flex items-center justify-between px-5 py-5">
           <button
-            onClick={() => { setTab("chat"); setActiveConvId(null); }}
+            onClick={() => {
+              setTab("chat");
+              setActiveConvId(null);
+            }}
             className="font-display text-2xl"
-          >Lovable<span className="text-rose">.</span></button>
+          >
+            Lovable<span className="text-rose">.</span>
+          </button>
           <button
             onClick={() => supabase.auth.signOut().then(() => router.invalidate())}
             className="rounded-full p-2 text-muted-foreground hover:text-rose hover:bg-rose/10"
             title="Sign out"
-          ><LogOut className="h-4 w-4" /></button>
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
 
         <div className="px-3 space-y-1">
-          <TabBtn icon={MessageSquare} label="Conversations" active={tab === "chat" && !activeConvId} onClick={() => { setTab("chat"); setActiveConvId(null); }} />
-          <TabBtn icon={FlaskConical} label="Idea Playground" active={tab === "playground"} onClick={() => setTab("playground")} />
-          <TabBtn icon={Brain} label="Memories" active={tab === "memories"} onClick={() => setTab("memories")} />
-          <TabBtn icon={ScrollText} label="Wonder Reports" active={tab === "wonder"} onClick={() => setTab("wonder")} />
+          <TabBtn
+            icon={MessageSquare}
+            label="Conversations"
+            active={tab === "chat" && !activeConvId}
+            onClick={() => {
+              setTab("chat");
+              setActiveConvId(null);
+            }}
+          />
+          <TabBtn
+            icon={FlaskConical}
+            label="Idea Playground"
+            active={tab === "playground"}
+            onClick={() => setTab("playground")}
+          />
+          <TabBtn
+            icon={Brain}
+            label="Memories"
+            active={tab === "memories"}
+            onClick={() => setTab("memories")}
+          />
+          <TabBtn
+            icon={ScrollText}
+            label="Wonder Reports"
+            active={tab === "wonder"}
+            onClick={() => setTab("wonder")}
+          />
         </div>
 
         <div className="mt-6 flex-1 overflow-y-auto px-3 pb-4">
           <div className="mb-2 flex items-center justify-between px-2">
-            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Threads</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Threads
+            </span>
           </div>
           <div className="space-y-1">
             {conversationsQ.data?.map((c) => (
               <button
                 key={c.id}
-                onClick={() => { setActiveConvId(c.id); setTab("chat"); }}
+                onClick={() => {
+                  setActiveConvId(c.id);
+                  setTab("chat");
+                }}
                 className={`group w-full rounded-lg px-3 py-2 text-left text-sm transition ${
                   activeConvId === c.id && tab === "chat"
                     ? "bg-rose/15 text-foreground"
@@ -130,7 +201,10 @@ function AppPage() {
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate">{c.title}</span>
                   <Trash2
-                    onClick={(e) => { e.stopPropagation(); deleteMut.mutate(c.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteMut.mutate(c.id);
+                    }}
                     className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground hover:text-destructive group-hover:block"
                   />
                 </div>
@@ -140,24 +214,37 @@ function AppPage() {
               </button>
             ))}
             {conversationsQ.data?.length === 0 && (
-              <p className="px-3 py-4 text-xs italic text-muted-foreground">No threads yet. Start one →</p>
+              <p className="px-3 py-4 text-xs italic text-muted-foreground">
+                No threads yet. Start one →
+              </p>
             )}
           </div>
         </div>
 
         <div className="border-t border-sidebar-border p-3">
-          <NewConversationMenu onCreate={(mode) => createMut.mutate(mode)} pending={createMut.isPending} />
+          <NewConversationMenu
+            onCreate={(mode) => createMut.mutate(mode)}
+            pending={createMut.isPending}
+          />
         </div>
       </aside>
 
       {/* Main */}
       <main className="flex flex-1 flex-col overflow-hidden">
-        {tab === "chat" && (
-          activeConvId
-            ? <ChatView conversationId={activeConvId} onBack={() => setActiveConvId(null)} />
-            : <Welcome onStart={(mode) => createMut.mutate(mode)} />
+        {tab === "chat" &&
+          (activeConvId ? (
+            <ChatView conversationId={activeConvId} onBack={() => setActiveConvId(null)} />
+          ) : (
+            <Welcome onStart={(mode) => createMut.mutate(mode)} />
+          ))}
+        {tab === "playground" && (
+          <PlaygroundView
+            onOpenConv={(id) => {
+              setActiveConvId(id);
+              setTab("chat");
+            }}
+          />
         )}
-        {tab === "playground" && <PlaygroundView onOpenConv={(id) => { setActiveConvId(id); setTab("chat"); }} />}
         {tab === "memories" && <MemoriesView />}
         {tab === "wonder" && <WonderView />}
       </main>
@@ -165,12 +252,25 @@ function AppPage() {
   );
 }
 
-function TabBtn({ icon: Icon, label, active, onClick }: { icon: any; label: string; active: boolean; onClick: () => void }) {
+function TabBtn({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: any;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
       className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-        active ? "bg-rose/15 text-foreground" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+        active
+          ? "bg-rose/15 text-foreground"
+          : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
       }`}
     >
       <Icon className="h-4 w-4" strokeWidth={1.5} />
@@ -179,7 +279,13 @@ function TabBtn({ icon: Icon, label, active, onClick }: { icon: any; label: stri
   );
 }
 
-function NewConversationMenu({ onCreate, pending }: { onCreate: (m: LovableMode) => void; pending: boolean }) {
+function NewConversationMenu({
+  onCreate,
+  pending,
+}: {
+  onCreate: (m: LovableMode) => void;
+  pending: boolean;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
@@ -195,7 +301,10 @@ function NewConversationMenu({ onCreate, pending }: { onCreate: (m: LovableMode)
           {(Object.keys(MODE_LABELS) as LovableMode[]).map((m) => (
             <button
               key={m}
-              onClick={() => { onCreate(m); setOpen(false); }}
+              onClick={() => {
+                onCreate(m);
+                setOpen(false);
+              }}
               className="block w-full rounded-md px-3 py-2 text-left text-sm transition hover:bg-rose/15"
             >
               <div className="font-medium">{MODE_LABELS[m].label}</div>
@@ -210,19 +319,23 @@ function NewConversationMenu({ onCreate, pending }: { onCreate: (m: LovableMode)
 
 function Welcome({ onStart }: { onStart: (m: LovableMode) => void }) {
   const getCheckInFn = useServerFn(getCheckIn);
-  const checkInQ = useQuery({ queryKey: ["checkin"], queryFn: () => getCheckInFn(), staleTime: 1000 * 60 * 10 });
+  const checkInQ = useQuery({
+    queryKey: ["checkin"],
+    queryFn: () => getCheckInFn(),
+    staleTime: 1000 * 60 * 10,
+  });
 
   return (
     <div className="flex flex-1 items-center justify-center overflow-y-auto p-8">
       <div className="w-full max-w-2xl">
-        <p className="font-display italic text-sm uppercase tracking-[0.3em] text-rose/80">— from Lovable —</p>
+        <p className="font-display italic text-sm uppercase tracking-[0.3em] text-rose/80">
+          — from Lovable —
+        </p>
         <div className="mt-4 ink-card rounded-2xl p-8 fade-in-up">
           {checkInQ.isLoading ? (
             <ThinkingDots />
           ) : (
-            <p className="font-display text-2xl leading-snug text-pretty">
-              {checkInQ.data?.text}
-            </p>
+            <p className="font-display text-2xl leading-snug text-pretty">{checkInQ.data?.text}</p>
           )}
         </div>
         <div className="mt-8 grid gap-2 sm:grid-cols-2">
@@ -294,19 +407,25 @@ function ChatView({ conversationId, onBack }: { conversationId: string; onBack: 
   }
 
   const mode = (convQ.data?.conversation.mode || "companion") as LovableMode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const seedId = (convQ.data?.conversation as any)?.seed_id as string | null | undefined;
   const fbByMsg = new Map((fbQ.data ?? []).map((f) => [f.message_id, f]));
 
   async function copySeedLink() {
     if (!seedId) return;
     try {
-      const { data, error } = await supabase.from("spark_seeds").select("slug").eq("id", seedId).maybeSingle();
+      const { data, error } = await supabase
+        .from("spark_seeds")
+        .select("slug")
+        .eq("id", seedId)
+        .maybeSingle();
       if (error || !data) throw new Error("Couldn't find seed");
       const url = `${window.location.origin}/spark/${data.slug}`;
       await navigator.clipboard.writeText(url);
       toast.success("Spark link copied.");
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't copy");
+    } catch (e) {
+      const err = e as Error;
+      toast.error(err.message || "Couldn't copy");
     }
   }
 
@@ -322,8 +441,12 @@ function ChatView({ conversationId, onBack }: { conversationId: string; onBack: 
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="min-w-0">
-            <h2 className="font-display text-xl truncate">{convQ.data?.conversation.title || "…"}</h2>
-            <p className="text-[10px] uppercase tracking-[0.25em] text-rose/70">{MODE_LABELS[mode].label} · {MODE_LABELS[mode].tag}</p>
+            <h2 className="font-display text-xl truncate">
+              {convQ.data?.conversation.title || "…"}
+            </h2>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-rose/70">
+              {MODE_LABELS[mode].label} · {MODE_LABELS[mode].tag}
+            </p>
           </div>
         </div>
         {seedId && (
@@ -340,13 +463,16 @@ function ChatView({ conversationId, onBack }: { conversationId: string; onBack: 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-8 space-y-6">
           {convQ.data?.messages.length === 0 && (
-            <p className="text-center font-display italic text-muted-foreground">a blank page, and we're both curious</p>
+            <p className="text-center font-display italic text-muted-foreground">
+              a blank page, and we're both curious
+            </p>
           )}
           {convQ.data?.messages.map((m) => (
             <div key={m.id}>
               <MessageBubble role={m.role} content={m.content} />
               {m.role === "assistant" && (
                 <FeedbackBar
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   feedback={fbByMsg.get(m.id) as any}
                   onRate={(p) => rateMut.mutate({ messageId: m.id, ...p })}
                 />
@@ -356,7 +482,9 @@ function ChatView({ conversationId, onBack }: { conversationId: string; onBack: 
           {sendMut.isPending && (
             <div className="fade-in-up">
               <RoleLabel role="assistant" />
-              <div className="mt-1"><ThinkingDots /></div>
+              <div className="mt-1">
+                <ThinkingDots />
+              </div>
             </div>
           )}
         </div>
@@ -368,7 +496,11 @@ function ChatView({ conversationId, onBack }: { conversationId: string; onBack: 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(e as any); }
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                submit(e as any);
+              }
             }}
             placeholder="Say anything…"
             rows={1}
@@ -430,7 +562,6 @@ function FeedbackBar({
   );
 }
 
-
 function MessageBubble({ role, content }: { role: string; content: string }) {
   if (role === "user") {
     return (
@@ -486,8 +617,14 @@ function MemoriesView() {
   const [draftImp, setDraftImp] = useState(3);
 
   const addMut = useMutation({
-    mutationFn: () => addFn({ data: { content: draft.trim(), kind: "fact", importance: draftImp } }),
-    onSuccess: () => { setDraft(""); setDraftImp(3); qc.invalidateQueries({ queryKey: ["memories"] }); toast.success("Filed away."); },
+    mutationFn: () =>
+      addFn({ data: { content: draft.trim(), kind: "fact", importance: draftImp } }),
+    onSuccess: () => {
+      setDraft("");
+      setDraftImp(3);
+      qc.invalidateQueries({ queryKey: ["memories"] });
+      toast.success("Filed away.");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
   const delMut = useMutation({
@@ -502,7 +639,10 @@ function MemoriesView() {
   });
   const pinMut = useMutation({
     mutationFn: (p: { id: string; pinned: boolean }) => pinFn({ data: p }),
-    onSuccess: (_, vars) => { qc.invalidateQueries({ queryKey: ["memories"] }); toast.success(vars.pinned ? "Pinned & protected." : "Unpinned."); },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["memories"] });
+      toast.success(vars.pinned ? "Pinned & protected." : "Unpinned.");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -510,7 +650,10 @@ function MemoriesView() {
     <div className="flex-1 overflow-y-auto p-8">
       <div className="mx-auto max-w-3xl">
         <h2 className="font-display text-3xl">What I remember about you</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Pieces I've gathered. Pin the important ones — pinned memories can't be edited or deleted by accident.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Pieces I've gathered. Pin the important ones — pinned memories can't be edited or deleted
+          by accident.
+        </p>
 
         <div className="ink-card mt-6 rounded-xl p-4">
           <textarea
@@ -528,7 +671,11 @@ function MemoriesView() {
                 onChange={(e) => setDraftImp(Number(e.target.value))}
                 className="rounded-md bg-input/40 border border-border px-2 py-1 text-xs"
               >
-                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {n}/5
+                  </option>
+                ))}
               </select>
             </label>
             <button
@@ -536,13 +683,18 @@ function MemoriesView() {
               disabled={draft.trim().length < 2 || addMut.isPending}
               className="rounded-full bg-gradient-ember px-4 py-1.5 text-sm text-primary-foreground transition hover:opacity-95 disabled:opacity-40"
             >
-              <Plus className="inline h-3.5 w-3.5 mr-1" />Add memory
+              <Plus className="inline h-3.5 w-3.5 mr-1" />
+              Add memory
             </button>
           </div>
         </div>
 
         <div className="mt-6 space-y-2">
-          {q.data?.length === 0 && <p className="font-display italic text-muted-foreground">Nothing yet. We're just meeting.</p>}
+          {q.data?.length === 0 && (
+            <p className="font-display italic text-muted-foreground">
+              Nothing yet. We're just meeting.
+            </p>
+          )}
           {q.data?.map((m) => (
             <MemoryItem
               key={m.id}
@@ -558,7 +710,12 @@ function MemoriesView() {
   );
 }
 
-function MemoryItem({ m, onSave, onDelete, onTogglePin }: {
+function MemoryItem({
+  m,
+  onSave,
+  onDelete,
+  onTogglePin,
+}: {
   m: MemoryRow;
   onSave: (p: { content?: string; importance?: number }) => void;
   onDelete: () => void;
@@ -568,10 +725,16 @@ function MemoryItem({ m, onSave, onDelete, onTogglePin }: {
   const [content, setContent] = useState(m.content);
   const [imp, setImp] = useState(m.importance);
 
-  useEffect(() => { setContent(m.content); setImp(m.importance); }, [m.content, m.importance]);
+  useEffect(() => {
+    setContent(m.content);
+    setImp(m.importance);
+  }, [m.content, m.importance]);
 
   function confirmDelete() {
-    if (m.pinned) { toast.error("Unpin first to delete."); return; }
+    if (m.pinned) {
+      toast.error("Unpin first to delete.");
+      return;
+    }
     if (confirm("Forget this memory?")) onDelete();
   }
 
@@ -587,16 +750,31 @@ function MemoryItem({ m, onSave, onDelete, onTogglePin }: {
         <div className="mt-3 flex items-center justify-between gap-3">
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             Weight
-            <select value={imp} onChange={(e) => setImp(Number(e.target.value))} className="rounded-md bg-input/40 border border-border px-2 py-1 text-xs">
-              {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
+            <select
+              value={imp}
+              onChange={(e) => setImp(Number(e.target.value))}
+              className="rounded-md bg-input/40 border border-border px-2 py-1 text-xs"
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n}/5
+                </option>
+              ))}
             </select>
           </label>
           <div className="flex gap-1">
-            <button onClick={() => setEditing(false)} className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary/60" title="Cancel">
+            <button
+              onClick={() => setEditing(false)}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary/60"
+              title="Cancel"
+            >
               <X className="h-4 w-4" />
             </button>
             <button
-              onClick={() => { onSave({ content: content.trim(), importance: imp }); setEditing(false); }}
+              onClick={() => {
+                onSave({ content: content.trim(), importance: imp });
+                setEditing(false);
+              }}
               disabled={content.trim().length < 2}
               className="rounded-md p-1.5 text-rose hover:bg-rose/10 disabled:opacity-40"
               title="Save"
@@ -610,7 +788,9 @@ function MemoryItem({ m, onSave, onDelete, onTogglePin }: {
   }
 
   return (
-    <div className={`ink-card group flex items-start justify-between gap-3 rounded-xl p-4 fade-in-up ${m.pinned ? "border-rose/40 bg-rose/[0.04]" : ""}`}>
+    <div
+      className={`ink-card group flex items-start justify-between gap-3 rounded-xl p-4 fade-in-up ${m.pinned ? "border-rose/40 bg-rose/[0.04]" : ""}`}
+    >
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-2">
           {m.pinned && <Pin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose" />}
@@ -626,17 +806,24 @@ function MemoryItem({ m, onSave, onDelete, onTogglePin }: {
           title={m.pinned ? "Unpin" : "Pin & protect"}
           className={`transition ${m.pinned ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
         >
-          {m.pinned
-            ? <PinOff className="h-4 w-4 text-rose hover:text-rose/70" />
-            : <Pin className="h-4 w-4 text-muted-foreground hover:text-rose" />}
+          {m.pinned ? (
+            <PinOff className="h-4 w-4 text-rose hover:text-rose/70" />
+          ) : (
+            <Pin className="h-4 w-4 text-muted-foreground hover:text-rose" />
+          )}
         </button>
         <button
-          onClick={() => { if (m.pinned) toast.error("Unpin first to edit."); else setEditing(true); }}
+          onClick={() => {
+            if (m.pinned) toast.error("Unpin first to edit.");
+            else setEditing(true);
+          }}
           title={m.pinned ? "Pinned — unpin first" : "Edit"}
           className={`transition opacity-0 group-hover:opacity-100 ${m.pinned ? "cursor-not-allowed" : ""}`}
           disabled={m.pinned}
         >
-          <Pencil className={`h-4 w-4 ${m.pinned ? "text-muted-foreground/40" : "text-muted-foreground hover:text-rose"}`} />
+          <Pencil
+            className={`h-4 w-4 ${m.pinned ? "text-muted-foreground/40" : "text-muted-foreground hover:text-rose"}`}
+          />
         </button>
         <button
           onClick={confirmDelete}
@@ -644,13 +831,14 @@ function MemoryItem({ m, onSave, onDelete, onTogglePin }: {
           className="transition opacity-0 group-hover:opacity-100"
           disabled={m.pinned}
         >
-          <Trash2 className={`h-4 w-4 ${m.pinned ? "text-muted-foreground/40" : "text-muted-foreground hover:text-destructive"}`} />
+          <Trash2
+            className={`h-4 w-4 ${m.pinned ? "text-muted-foreground/40" : "text-muted-foreground hover:text-destructive"}`}
+          />
         </button>
       </div>
     </div>
   );
 }
-
 
 /* ---------------- Idea Playground ---------------- */
 
@@ -704,7 +892,9 @@ function PlaygroundView({ onOpenConv }: { onOpenConv: (id: string) => void }) {
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
             <h2 className="font-display text-3xl">Idea Playground</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Spark seeds — provocations to think with. Pick one to play, or share a link.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Spark seeds — provocations to think with. Pick one to play, or share a link.
+            </p>
           </div>
           <button
             onClick={() => genMut.mutate()}
@@ -722,7 +912,9 @@ function PlaygroundView({ onOpenConv }: { onOpenConv: (id: string) => void }) {
               key={f.id}
               onClick={() => setFlavor(f.id)}
               className={`rounded-full px-3 py-1 text-xs uppercase tracking-wider transition ${
-                flavor === f.id ? "bg-rose/25 text-foreground" : "bg-secondary/40 text-muted-foreground hover:bg-secondary/70"
+                flavor === f.id
+                  ? "bg-rose/25 text-foreground"
+                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary/70"
               }`}
             >
               {f.label}
@@ -732,11 +924,14 @@ function PlaygroundView({ onOpenConv }: { onOpenConv: (id: string) => void }) {
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           {sparks.length === 0 && !genMut.isPending && (
-            <p className="font-display italic text-muted-foreground sm:col-span-2">An empty stage. Spark a few to begin.</p>
+            <p className="font-display italic text-muted-foreground sm:col-span-2">
+              An empty stage. Spark a few to begin.
+            </p>
           )}
           {genMut.isPending && (
             <div className="ink-card rounded-xl p-6 sm:col-span-2 flex items-center gap-3">
-              <ThinkingDots /> <span className="text-sm italic text-muted-foreground">conjuring…</span>
+              <ThinkingDots />{" "}
+              <span className="text-sm italic text-muted-foreground">conjuring…</span>
             </div>
           )}
           {sparks.map((s, i) => (
@@ -748,7 +943,9 @@ function PlaygroundView({ onOpenConv }: { onOpenConv: (id: string) => void }) {
                 <Sparkles className="h-3 w-3" /> {s.tag}
               </div>
               <div className="mt-2 font-display text-lg">{s.title}</div>
-              <div className="mt-1 text-sm text-foreground/80 leading-relaxed flex-1">{s.prompt}</div>
+              <div className="mt-1 text-sm text-foreground/80 leading-relaxed flex-1">
+                {s.prompt}
+              </div>
               <div className="mt-4 flex items-center justify-between gap-2">
                 <button
                   onClick={() => shareMut.mutate({ title: s.title, prompt: s.prompt, tag: s.tag })}
@@ -774,7 +971,6 @@ function PlaygroundView({ onOpenConv }: { onOpenConv: (id: string) => void }) {
   );
 }
 
-
 /* ---------------- Wonder Reports ---------------- */
 
 function WonderView() {
@@ -784,16 +980,27 @@ function WonderView() {
   const q = useQuery({ queryKey: ["wonder"], queryFn: () => listFn() });
   const gen = useMutation({
     mutationFn: () => genFn(),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["wonder"] }); toast.success("This week, summarized."); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["wonder"] });
+      toast.success("This week, summarized.");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const reports = q.data ?? [];
   const total = reports.length;
   const latest = reports[0];
-  const span = total > 1
-    ? Math.max(1, Math.round((new Date(reports[0].created_at).getTime() - new Date(reports[reports.length - 1].created_at).getTime()) / (1000 * 60 * 60 * 24)))
-    : 0;
+  const span =
+    total > 1
+      ? Math.max(
+          1,
+          Math.round(
+            (new Date(reports[0].created_at).getTime() -
+              new Date(reports[reports.length - 1].created_at).getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
+        )
+      : 0;
 
   function exportOne(r: { title: string; body: string; created_at: string }) {
     const safe = r.title.replace(/[^a-z0-9\-_ ]/gi, "").replace(/\s+/g, "_") || "wonder_report";
@@ -803,8 +1010,14 @@ function WonderView() {
 
   function exportAll() {
     if (!reports.length) return;
-    const md = reports.map((r) => `# ${r.title}\n\n_${new Date(r.created_at).toLocaleString()}_\n\n${r.body}\n`).join("\n\n---\n\n");
-    downloadText(`lovable_wonder_reports_${new Date().toISOString().slice(0, 10)}.md`, md, "text/markdown");
+    const md = reports
+      .map((r) => `# ${r.title}\n\n_${new Date(r.created_at).toLocaleString()}_\n\n${r.body}\n`)
+      .join("\n\n---\n\n");
+    downloadText(
+      `lovable_wonder_reports_${new Date().toISOString().slice(0, 10)}.md`,
+      md,
+      "text/markdown",
+    );
   }
 
   return (
@@ -813,7 +1026,9 @@ function WonderView() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 className="font-display text-3xl">Wonder Reports</h2>
-            <p className="mt-2 text-sm text-muted-foreground">The strange and beautiful threads we've been pulling.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              The strange and beautiful threads we've been pulling.
+            </p>
           </div>
           <div className="flex gap-2">
             <button
@@ -824,7 +1039,8 @@ function WonderView() {
               <Download className="h-4 w-4" /> Export all
             </button>
             <button
-              onClick={() => gen.mutate()} disabled={gen.isPending}
+              onClick={() => gen.mutate()}
+              disabled={gen.isPending}
               className="rounded-full bg-gradient-ember px-5 py-2 text-sm text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
             >
               {gen.isPending ? "Composing…" : "Generate this week's"}
@@ -835,23 +1051,44 @@ function WonderView() {
         {/* Dashboard stats */}
         <div className="mt-6 grid grid-cols-3 gap-3">
           <StatCard label="Reports" value={String(total)} />
-          <StatCard label="Latest" value={latest ? new Date(latest.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"} />
+          <StatCard
+            label="Latest"
+            value={
+              latest
+                ? new Date(latest.created_at).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "—"
+            }
+          />
           <StatCard label="Span" value={span ? `${span}d` : "—"} />
         </div>
 
         <div className="mt-8 space-y-4">
-          {q.data?.length === 0 && <p className="font-display italic text-muted-foreground">No reports yet. Have a few conversations, then ask me to compose one.</p>}
+          {q.data?.length === 0 && (
+            <p className="font-display italic text-muted-foreground">
+              No reports yet. Have a few conversations, then ask me to compose one.
+            </p>
+          )}
           {reports.map((r) => (
             <details key={r.id} className="ink-card group rounded-2xl p-6 fade-in-up" open>
               <summary className="cursor-pointer list-none flex items-start justify-between gap-3">
                 <div>
                   <h3 className="font-display text-2xl">{r.title}</h3>
                   <p className="text-[10px] uppercase tracking-wider text-rose/60">
-                    {new Date(r.created_at).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+                    {new Date(r.created_at).toLocaleDateString(undefined, {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </p>
                 </div>
                 <button
-                  onClick={(e) => { e.preventDefault(); exportOne(r); }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    exportOne(r);
+                  }}
                   className="shrink-0 rounded-full p-2 text-muted-foreground hover:bg-rose/10 hover:text-rose"
                   title="Export as markdown"
                 >
@@ -882,7 +1119,10 @@ function downloadText(filename: string, content: string, mime: string) {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); a.remove();
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   URL.revokeObjectURL(url);
 }

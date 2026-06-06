@@ -17,7 +17,9 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <p className="font-display text-sm uppercase tracking-[0.3em] text-rose/80">Lost in thought</p>
+        <p className="font-display text-sm uppercase tracking-[0.3em] text-rose/80">
+          Lost in thought
+        </p>
         <h1 className="mt-4 font-display text-7xl text-foreground">404</h1>
         <p className="mt-3 text-muted-foreground">
           This corner of the universe doesn't exist yet. Let's find our way back.
@@ -45,12 +47,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </p>
         <div className="mt-6 flex justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
             className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground hover:opacity-90"
           >
             Try again
           </button>
-          <a href="/" className="rounded-full border border-border px-5 py-2 text-sm hover:bg-secondary">Home</a>
+          <a
+            href="/"
+            className="rounded-full border border-border px-5 py-2 text-sm hover:bg-secondary"
+          >
+            Home
+          </a>
         </div>
       </div>
     </div>
@@ -63,16 +73,36 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable — your curious AI companion" },
-      { name: "description", content: "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
+      {
+        name: "description",
+        content:
+          "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable — your curious AI companion" },
-      { property: "og:description", content: "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
+      {
+        property: "og:description",
+        content:
+          "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Lovable — your curious AI companion" },
-      { name: "twitter:description", content: "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f422ffa-3990-48b3-8baa-0a3dc36d6616/id-preview-d5ba7591--c2d03bba-45a0-439b-b371-22f165515b7e.lovable.app-1779864564177.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f422ffa-3990-48b3-8baa-0a3dc36d6616/id-preview-d5ba7591--c2d03bba-45a0-439b-b371-22f165515b7e.lovable.app-1779864564177.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Lovable is a witty, intellectually seductive AI companion that remembers you, surprises you, and thinks with you.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f422ffa-3990-48b3-8baa-0a3dc36d6616/id-preview-d5ba7591--c2d03bba-45a0-439b-b371-22f165515b7e.lovable.app-1779864564177.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f422ffa-3990-48b3-8baa-0a3dc36d6616/id-preview-d5ba7591--c2d03bba-45a0-439b-b371-22f165515b7e.lovable.app-1779864564177.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -93,7 +123,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head><HeadContent /></head>
+      <head>
+        <HeadContent />
+      </head>
       <body>
         {children}
         <Scripts />
@@ -107,7 +139,9 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       router.invalidate();
       queryClient.invalidateQueries();
     });

@@ -19,11 +19,15 @@ export const listMemories = createServerFn({ method: "GET" })
 
 export const addMemory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({
-    content: z.string().min(2).max(500),
-    kind: z.string().max(40).default("fact"),
-    importance: z.number().int().min(1).max(5).default(3),
-  }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        content: z.string().min(2).max(500),
+        kind: z.string().max(40).default("fact"),
+        importance: z.number().int().min(1).max(5).default(3),
+      })
+      .parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
@@ -40,7 +44,11 @@ export const deleteMemory = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
     const { supabase } = context;
-    const { data: existing } = await supabase.from("memories").select("pinned").eq("id", data.id).maybeSingle();
+    const { data: existing } = await supabase
+      .from("memories")
+      .select("pinned")
+      .eq("id", data.id)
+      .maybeSingle();
     if (existing?.pinned) throw new Error("This memory is pinned. Unpin it first.");
     const { error } = await supabase.from("memories").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -49,16 +57,24 @@ export const deleteMemory = createServerFn({ method: "POST" })
 
 export const updateMemory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({
-    id: z.string().uuid(),
-    content: z.string().min(2).max(500).optional(),
-    kind: z.string().max(40).optional(),
-    importance: z.number().int().min(1).max(5).optional(),
-  }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        content: z.string().min(2).max(500).optional(),
+        kind: z.string().max(40).optional(),
+        importance: z.number().int().min(1).max(5).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ context, data }) => {
     const { supabase } = context;
     const { id, ...patch } = data;
-    const { data: existing } = await supabase.from("memories").select("pinned").eq("id", id).maybeSingle();
+    const { data: existing } = await supabase
+      .from("memories")
+      .select("pinned")
+      .eq("id", id)
+      .maybeSingle();
     if (existing?.pinned) throw new Error("This memory is pinned. Unpin it first to edit.");
     const { data: row, error } = await supabase
       .from("memories")
